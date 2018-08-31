@@ -100,5 +100,8 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# rechat
+/rechat-dl.py
+
 # mypy
 .mypy_cache/
