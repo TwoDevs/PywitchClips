@@ -7,23 +7,24 @@ from pprint import pprint # data structure formatting
 directory = os.getcwd() # get present working directory location here
 cnt = 0 # keep a count of json files found
 jsonfiles = [] # list to store all json files found at location
-emotedict = {}
+emotedict = {} # dict of dicts of emotes per json
 
-# Twitch auth
+# Twitch auth info
 client = TwitchClient(client_id='<uyd30soyglmbs9eabkuapa6dzsdywk>')
-emoteset = [0] # Emotesets by int to retrieve
+emoteset = [0] # Emotesets to retrieve; input is int list
 emotes = client.chat.get_emoticons_by_set(emoteset) # Contains dict of emotes
-
-# Parse emote names through returned dict and add to mapping
-for x in emotes['emoticon_sets']['0']:
-    emotedict[x['code']] = 0
 
 # Identify files in directory
 for file in os.listdir(directory):
     try:
+        # JSON file assumed to be output from rechat-dl.py
         if file.endswith(".json"):
             jsonfiles.append(str(file))
-            cnt = cnt + 1
+
+            # Initialize dict mapping for json
+            tmpdict = {}
+            for x in emotes['emoticon_sets']['0']:
+                tmpdict[x['code']] = 0
 
             with open(file) as f:
                 data = json.load(f)
@@ -36,14 +37,19 @@ for file in os.listdir(directory):
                 else:
                     msgarr = entry['message']['body'].split(" ")
                     for word in msgarr:
-                        if word in emotedict:
-                            emotedict[word] = emotedict[word] + 1
+                        if word in tmpdict:
+                            tmpdict[word] = tmpdict[word] + 1
+
+            # Add dict to json dict
+            emotedict[cnt] = tmpdict
+            cnt = cnt + 1
 
     except Exception as e:
         raise e
         print ("No files in directory!")
 
-print (emotedict)
+# print out dictionary
+pprint (emotedict)
 
 # log files found of each type
 for jsonfile in jsonfiles:
